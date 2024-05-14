@@ -1,11 +1,10 @@
 import datetime
-
-from rest_framework.generics import CreateAPIView, ListCreateAPIView
+from rest_framework.generics import CreateAPIView, ListCreateAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
-from api.serializers import UserSerializer, CreateMenuSerializer, MenuSerializer
+from api.serializers import UserSerializer, CreateMenuSerializer, MenuSerializer, VotesForMenuSerializer, VotesForMenuRetrieveSerializer
 from django.contrib.auth import get_user_model
-from api.models import Menu
-from api.custom_permissions import IsRestaurantOnly
+from api.models import Menu, VotesForMenu
+from api.custom_permissions import IsRestaurantOnly, IsEmployeeOnly
 from rest_framework import permissions
 
 
@@ -27,7 +26,6 @@ class MenuListCreateAPIView(ListCreateAPIView):
         return self.serializer_class
 
     def create(self, request, *args, **kwargs):
-        print(request.user.id)
         if self.is_user_id_equals_request_user(user_id=request.data.get('user')):
             if Menu.objects.filter(user=request.user, menu_date=datetime.date.today()).exists():
                 return Response(data={"error": "You already added menu today"})
@@ -41,6 +39,29 @@ class MenuListCreateAPIView(ListCreateAPIView):
     def get_permissions(self):
         if self.request.method == "POST":
             self.permission_classes = [permissions.IsAuthenticated, IsRestaurantOnly]
+        else:
+            self.permission_classes = [permissions.IsAuthenticated]
+
+        return [permission() for permission in self.permission_classes]
+
+
+class VotesForMenuAPIView(ListCreateAPIView):
+    queryset = VotesForMenu.objects.filter(voting_date=datetime.date.today())
+    serializer_class = VotesForMenuRetrieveSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return VotesForMenuSerializer
+        return self.serializer_class
+
+    def create(self, request, *args, **kwargs):
+        if VotesForMenu.objects.filter(user=request.user, voting_date=datetime.date.today()).exists():
+            return Response(data={"error": "You already voted today"})
+        return super().create(request, *args, **kwargs)
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            self.permission_classes = [permissions.IsAuthenticated, IsEmployeeOnly]
         else:
             self.permission_classes = [permissions.IsAuthenticated]
 
