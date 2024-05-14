@@ -26,4 +26,4 @@ class VotesForMenu(models.Model):
         db_table = "votes_for_menu"
 
     def __str__(self):
-        return f"{self.menu.name}, {self.voting_date} has {self.votes} votes"
+        return f"{self.menu.user.role}, {self.voting_date} has {self.votes} votes"

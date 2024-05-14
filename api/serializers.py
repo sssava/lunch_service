@@ -1,6 +1,9 @@
+import datetime
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from core.constants import ROLE_CHOICES, EMPLOYEE
+from core.constants import ROLE_CHOICES
+from api.models import Menu
 
 
 User = get_user_model()
@@ -19,3 +22,20 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+class CreateMenuSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Menu
+        fields = ["user", "image", "menu_date"]
+
+    def create(self, validated_data):
+        return Menu.objects.create(**validated_data)
+
+
+class MenuSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = Menu
+        fields = ["user", "image", "menu_date"]
