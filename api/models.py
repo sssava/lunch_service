@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class Menu(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="menu")
     image = models.ImageField(upload_to="menus/")
     menu_date = models.DateField(auto_now_add=True)
 
@@ -18,9 +18,9 @@ class Menu(models.Model):
 
 
 class VotesForMenu(models.Model):
-    menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
+    menu = models.ForeignKey(Menu, on_delete=models.CASCADE, related_name="votes")
     voting_date = models.DateField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True, null=True, related_name="votes")
 
     class Meta:
         db_table = "votes_for_menu"

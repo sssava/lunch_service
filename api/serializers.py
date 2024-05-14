@@ -1,5 +1,4 @@
 import datetime
-from django.db.models import F
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from core.constants import ROLE_CHOICES
@@ -35,10 +34,15 @@ class CreateMenuSerializer(serializers.ModelSerializer):
 
 class MenuSerializer(serializers.ModelSerializer):
     user = UserSerializer()
+    count_votes = serializers.SerializerMethodField()
 
     class Meta:
         model = Menu
-        fields = ["id", "user", "image", "menu_date"]
+        fields = ["id", "user", "image", "menu_date", "count_votes"]
+
+    def get_count_votes(self, obj):
+        count_votes = obj.votes.filter(voting_date=datetime.date.today()).count()
+        return count_votes
 
 
 class VotesForMenuSerializer(serializers.ModelSerializer):
@@ -58,4 +62,6 @@ class VotesForMenuRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = VotesForMenu
         fields = ["id", "menu", "user", "voting_date"]
+
+
 
